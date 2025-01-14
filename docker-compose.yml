@@ -8,7 +8,7 @@ services:
     restart: always
     volumes:
       - ./guacamole/guacd/drive:/drive
-      - ./guacamole/guacd/record:/record
+      - ./guacamole/guacd/record:/var/lib/guacamole/recordings
     deploy:
       resources:
         limits:
@@ -49,6 +49,16 @@ services:
       POSTGRESQL_HOSTNAME: "${POSTGRESQL_HOSTNAME}"
       POSTGRESQL_USER: "${POSTGRESQL_USER}"
       POSTGRESQL_PASSWORD: "${POSTGRESQL_PASSWORD}"
+      POSTGRESQL_AUTO_CREATE_ACCOUNTS: true
+      RECORDING_SEARCH_PATH: '/var/lib/guacamole/recordings'
+      POSTGRESQL_DEFAULT_MAX_GROUP_CONNECTIONS_PER_USER: 3
+      POSTGRESQL_DEFAULT_MAX_CONNECTIONS_PER_USER: 1
+      POSTGRESQL_DEFAULT_MAX_GROUP_CONNECTIONS: 3
+      POSTGRESQL_DEFAULT_MAX_CONNECTIONS: 1
+      POSTGRESQL_ABSOLUTE_MAX_CONNECTIONS: 10  
+    volumes:
+      - ./guacamole/guacd/drive:/drive
+      - ./guacamole/guacd/record:/var/lib/guacamole/recordings
     networks:
       - net-guacamole
       - npm-network
@@ -66,4 +76,4 @@ networks:
     driver: bridge
   npm-network:
     name: npm-network
-    external: true 
+    external: true
