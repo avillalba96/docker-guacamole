@@ -1,0 +1,5 @@
+GUACD_HOSTNAME=guacd_guacamole
+POSTGRESQL_HOSTNAME=postgres_guacamole
+POSTGRESQL_DATABASE=guacamole_db
+POSTGRESQL_USER=guacamole_user
+POSTGRESQL_PASSWORD=PasswordABCD

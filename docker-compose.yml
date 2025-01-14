@@ -1,0 +1,69 @@
+services:
+  guacd_guacamole:
+    container_name: guacd_guacamole
+    hostname: guacd_guacamole
+    image: guacamole/guacd:1.5.5
+    networks:
+      - net-guacamole
+    restart: always
+    volumes:
+      - ./guacamole/guacd/drive:/drive
+      - ./guacamole/guacd/record:/record
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+  postgres_guacamole:
+    container_name: postgres_guacamole
+    hostname: postgres_guacamole
+    image: postgres:17.2-alpine3.21
+    environment:
+      PGDATA: /var/lib/postgresql/data/guacamole
+      POSTGRES_DB: "${POSTGRESQL_DATABASE}"
+      POSTGRES_USER: "${POSTGRESQL_USER}"
+      POSTGRES_PASSWORD: "${POSTGRESQL_PASSWORD}"
+    networks:
+      - net-guacamole
+    restart: always
+    volumes:
+      - ./guacamole/db/init:/docker-entrypoint-initdb.d
+      - ./guacamole/db/data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+  guacamole:
+    container_name: guacamole
+    hostname: guacamole
+    image: guacamole/guacamole:1.5.5
+    depends_on:
+      - guacd_guacamole
+      - postgres_guacamole
+    environment:
+      GUACD_HOSTNAME: "${GUACD_HOSTNAME}"
+      POSTGRESQL_DATABASE: "${POSTGRESQL_DATABASE}"
+      POSTGRESQL_HOSTNAME: "${POSTGRESQL_HOSTNAME}"
+      POSTGRESQL_USER: "${POSTGRESQL_USER}"
+      POSTGRESQL_PASSWORD: "${POSTGRESQL_PASSWORD}"
+    networks:
+      - net-guacamole
+      - npm-network
+    ports:
+      - "8080:8080"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+networks:
+  net-guacamole:
+    driver: bridge
+  npm-network:
+    name: npm-network
+    external: true 
