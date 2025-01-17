@@ -9,11 +9,16 @@ services:
     volumes:
       - ./guacamole/guacd/drive:/drive
       - ./guacamole/guacd/record:/var/lib/guacamole/recordings
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.clean-recordings.schedule: "0 0 * * *"
+#      ofelia.job-exec.clean-recordings.command: "find /var/lib/guacamole/recordings -mindepth 1 -maxdepth 1 -type d -mtime +1 -exec rm -r {} +"
+      ofelia.job-exec.clean-recordings.command: "find /var/lib/guacamole/recordings -mindepth 1 -maxdepth 1 -type d -mtime +15 -exec rm -r {} +"
     deploy:
       resources:
         limits:
           cpus: "1"
-          memory: "1024M"
+          memory: "512M"
 
   postgres_guacamole:
     container_name: postgres_guacamole
@@ -34,7 +39,7 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: "1024M"
+          memory: "512M"
 
   guacamole:
     container_name: guacamole
@@ -56,6 +61,7 @@ services:
       POSTGRESQL_DEFAULT_MAX_GROUP_CONNECTIONS: 3
       POSTGRESQL_DEFAULT_MAX_CONNECTIONS: 1
       POSTGRESQL_ABSOLUTE_MAX_CONNECTIONS: 10  
+      REMOTE_IP_VALVE_ENABLE: true
     volumes:
       - ./guacamole/guacd/drive:/drive
       - ./guacamole/guacd/record:/var/lib/guacamole/recordings
@@ -69,11 +75,30 @@ services:
       resources:
         limits:
           cpus: "1"
-          memory: "1024M"
+          memory: "512M"
+
+  ofelia_guacamole:
+    image: mcuadros/ofelia:0.3
+    container_name: ofelia_guacamole
+    hostname: ofelia_guacamole
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    userns_mode: "host"        
+    depends_on:
+      - guacd_guacamole 
+    command: daemon --docker
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "512M"      
+    networks:
+      - net-guacamole
 
 networks:
   net-guacamole:
     driver: bridge
   npm-network:
     name: npm-network
-    external: true
+    external: true 
